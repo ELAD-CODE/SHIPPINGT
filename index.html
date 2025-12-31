@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב משלוחים בינלאומיים - Shipment Tracking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">בית</a></li>
+                <li><a href="about.html">אודות</a></li>
+                <li><a href="contact.html">יצירת קשר</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="home-section">
+            <h1>ברוכים הבאים למערכת מעקב משלוחים בינלאומיים</h1>
+            <p>שירות זה מאפשר לכם לעקוב אחר משלוחים בינלאומיים בצורה פשוטה ומהירה. הזינו את פרטי המשלוח בטופס למטה, ונספק לכם קישורים ישירים לאתרי המעקב הרלוונטיים.</p>
+            <p>השירות תומך במעקב אחר קונטיינרים, B/L, AWB ועוד, דרך חברות מובילות כמו Maersk, ZIM, MSC, DHL, תס"ק (מכס ישראל), נמל אשדוד ונמל חיפה.</p>
+        </section>
+        
+        <section class="search-form">
+            <h2>חיפוש משלוח</h2>
+            <form id="searchForm">
+                <label for="container">מספר קונטיינר:</label>
+                <input type="text" id="container" name="container" placeholder="לדוגמה: MSCU1234567">
+                
+                <label for="bl">מספר B/L (Bill of Lading):</label>
+                <input type="text" id="bl" name="bl" placeholder="לדוגמה: 123456789">
+                
+                <label for="awb">מספר AWB (Air Waybill):</label>
+                <input type="text" id="awb" name="awb" placeholder="לדוגמה: 1234567890">
+                
+                <label for="company">שם חברת הספנות/תעופה (אופציונלי):</label>
+                <select id="company" name="company">
+                    <option value="">בחר חברה (או השאר ריק לכל החברות)</option>
+                    <option value="maersk">Maersk</option>
+                    <option value="zim">ZIM</option>
+                    <option value="msc">MSC</option>
+                    <option value="dhl">DHL</option>
+                    <option value="fedex">FedEx</option>
+                    <option value="shaam">תס"ק - מכס ישראל</option>
+                    <option value="ashdod">נמל אשדוד</option>
+                    <option value="haifa">נמל חיפה</option>
+                </select>
+                
+                <button type="submit">חפש משלוח</button>
+            </form>
+            <div id="results"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 מעקב משלוחים בינלאומיים. כל הזכויות שמורות.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
