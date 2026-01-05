@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב משלוחים בינלאומיים - Shipment Tracking Israel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">בית</a></li>
+                <li><a href="about.html">אודות</a></li>
+                <li><a href="contact.html">יצירת קשר</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="home-section">
+            <h1>🚢 מעקב משלוחים בינלאומיים</h1>
+            <p class="subtitle">מערכת מעקב מתקדמת לספנות, תעופה ודואר - מותאמת לשוק הישראלי</p>
+            <p>עקוב אחר המשלוח שלך בזמן אמת מ-1,200+ חברות ספנות, תעופה ודואר ברחבי העולם</p>
+        </section>
+        
+        <section class="search-form">
+            <h2>🔍 חפש את המשלוח שלך</h2>
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="trackingNumber">מספר מעקב:</label>
+                    <input 
+                        type="text" 
+                        id="trackingNumber" 
+                        name="trackingNumber"
+                        placeholder="הזן מספר קונטיינר, B/L, AWB או מספר דואר"
+                        required
+                    >
+                    <small>לדוגמה: ZIMU1234567, 12345678912345, EL123456789IL</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="carrier">סוג משלוח (אופציונלי):</label>
+                    <select id="carrier" name="carrier">
+                        <option value="">זיהוי אוטומטי</option>
+                        <optgroup label="ספנות">
+                            <option value="zim">ZIM - צים</option>
+                            <option value="maersk">Maersk</option>
+                            <option value="msc">MSC</option>
+                            <option value="cma-cgm">CMA CGM</option>
+                            <option value="hapag-lloyd">Hapag-Lloyd</option>
+                            <option value="cosco">COSCO</option>
+                            <option value="evergreen">Evergreen</option>
+                        </optgroup>
+                        <optgroup label="תעופה">
+                            <option value="el-al-cargo">אל על קרגו</option>
+                            <option value="dhl">DHL</option>
+                            <option value="fedex">FedEx</option>
+                            <option value="ups">UPS</option>
+                        </optgroup>
+                        <optgroup label="דואר">
+                            <option value="israel-post">דואר ישראל</option>
+                            <option value="usps">USPS</option>
+                            <option value="china-post">China Post</option>
+                        </optgroup>
+                        <optgroup label="Couriers ישראליים">
+                            <option value="lionwheel">Lionwheel - ליונוהיל</option>
+                            <option value="chita-express">Chita Express - צ'יטה</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <button type="submit" class="search-btn">
+                    <span class="btn-icon">🔍</span>
+                    <span class="btn-text">חפש משלוח</span>
+                </button>
+            </form>
+            
+            <!-- Loading spinner -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>מחפש את המשלוח שלך...</p>
+            </div>
+            
+            <!-- Results container -->
+            <div id="results" class="results-container"></div>
+        </section>
+        
+        <!-- Quick Links Section -->
+        <section class="quick-links">
+            <h2>🔗 קישורים שימושיים</h2>
+            <div class="links-grid">
+                <div class="link-card">
+                    <h3>🏛️ גופים ממשלתיים</h3>
+                    <ul>
+                        <li><a href="https://www.shaam.gov.il" target="_blank">תס"ק - מכס ישראל</a></li>
+                        <li><a href="https://www.ashdodport.co.il" target="_blank">נמל אשדוד</a></li>
+                        <li><a href="https://www.haifaport.co.il" target="_blank">נמל חיפה</a></li>
+                    </ul>
+                </div>
+                
+                <div class="link-card">
+                    <h3>📰 חדשות ועדכונים</h3>
+                    <ul>
+                        <li><a href="https://www.chamber.org.il/newslobby/" target="_blank">לשכת המסחר</a></li>
+                        <li><a href="https://www.gov.il/he/departments/economy" target="_blank">משרד הכלכלה</a></li>
+                    </ul>
+                </div>
+                
+                <div class="link-card">
+                    <h3>📚 מדריכים</h3>
+                    <ul>
+                        <li><a href="#" onclick="alert('בקרוב!')">איך לשחרר משלוח ממכס</a></li>
+                        <li><a href="#" onclick="alert('בקרוב!')">מחשבון מכס</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 מעקב משלוחים בינלאומיים. כל הזכויות שמורות.</p>
+        <p class="powered-by">Powered by TrackingMore API | 1,200+ Carriers Worldwide</p>
+    </footer>
+    
+    <script src="script-api.js"></script>
+</body>
+</html>
