@@ -1,66 +1,40 @@
-// types/tracking.ts
-// הגדרות TypeScript לכל הטיפוסים במערכת
-
-export interface TrackingEvent {
-  date: string;
-  status: string;
-  location?: string;
-  details?: string;
-  checkpoint_date?: string;
-}
-
-export interface LocationInfo {
-  country?: string;
-  city?: string;
-}
-
-export interface CarrierInfo {
-  code: string;
-  name: string;
-  nameHebrew?: string;
-}
-
-export interface TrackingStatus {
-  code: string;
-  text: string;
-  emoji?: string;
-  lastUpdate?: string;
-}
-
 export interface TrackingResult {
-  success: boolean;
+  success: true;
   tracking_number: string;
-  carrier: CarrierInfo;
-  status: TrackingStatus;
-  origin?: LocationInfo;
-  destination?: LocationInfo;
+  carrier: {
+    code: string;
+    name: string;
+  };
+  status: {
+    code: string;
+    text: string;
+    lastUpdate: string;
+  };
+  origin?: {
+    country: string;
+    city?: string;
+  };
+  destination?: {
+    country: string;
+    city?: string;
+  };
   transit_time?: number;
   days_after_shipping?: number;
   events: TrackingEvent[];
   estimated_delivery?: string;
-  raw_data?: any; // הנתונים המקוריים מהAPI
+}
+
+export interface TrackingEvent {
+  date: string;
+  status: string;
+  location: string;
+  checkpoint_date?: string;
 }
 
 export interface TrackingError {
   success: false;
   error: string;
   trackingNumber?: string;
-  details?: string;
-}
-
-export interface CarrierPattern {
-  code: string;
-  name: string;
-  nameHebrew: string;
-  patterns: RegExp[];
-  apiCode?: string; // הקוד ב-TrackingMore
-}
-
-export interface RecentSearch {
-  trackingNumber: string;
-  carrier: string;
-  timestamp: number;
-  status?: string;
 }
 
 export type TrackingResponse = TrackingResult | TrackingError;

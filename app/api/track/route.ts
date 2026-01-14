@@ -1,87 +1,153 @@
 // app/api/track/route.ts
-// Vercel Serverless Function - מעקב אחר משלוחים
-
 import { NextRequest, NextResponse } from 'next/server';
-import { trackShipment } from '@/lib/trackingApis';
-import { detectCarrier } from '@/lib/carriers';
-import trackingCache, { getCacheKey } from '@/lib/cache';
-
-export const runtime = 'edge'; // ריצה ב-Edge Runtime לביצועים טובים יותר
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const trackingNumber = searchParams.get('trackingNumber');
   const carrier = searchParams.get('carrier');
 
-  // בדיקת תקינות
+  // Validation
   if (!trackingNumber) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'חסר מספר מעקב',
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: 'חסר מספר מעקב'
+    }, { status: 400 });
   }
 
-  const cleanTrackingNumber = trackingNumber.trim().toUpperCase();
+  const apiKey = process.env.TRACKINGMORE_API_KEY;
+
+  if (!apiKey) {
+    console.error('TRACKINGMORE_API_KEY not configured');
+    return NextResponse.json({
+      success: false,
+      error: 'שגיאת הגדרות שרת - נא ליצור קשר עם התמיכה'
+    }, { status: 500 });
+  }
 
   try {
-    // בדיקה אם יש בcache
-    const cacheKey = getCacheKey(cleanTrackingNumber, carrier || undefined);
-    const cached = trackingCache.get(cacheKey);
-
-    if (cached) {
-      console.log(`Cache hit for ${cleanTrackingNumber}`);
-      return NextResponse.json({
-        ...cached,
-        cached: true,
-      });
-    }
-
-    // זיהוי אוטומטי של ספק אם לא צוין
-    let carrierCode = carrier;
-    if (!carrierCode || carrierCode === 'auto') {
-      const detected = detectCarrier(cleanTrackingNumber);
-      if (detected) {
-        carrierCode = detected.apiCode || detected.code;
-        console.log(`Auto-detected carrier: ${carrierCode} (${detected.name})`);
-      }
-    }
-
-    // קריאה ל-API
-    const result = await trackShipment(cleanTrackingNumber, carrierCode || undefined);
-
-    // אם הצליח - שמירה בcache
-    if (result.success) {
-      trackingCache.set(cacheKey, result, 10); // 10 דקות
-    }
-
-    // בחירת status code
-    const statusCode = result.success ? 200 : 404;
-
-    return NextResponse.json(result, { status: statusCode });
-  } catch (error) {
-    console.error('Error in track API:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'שגיאה בשרת - נסה שוב מאוחר יותר',
-        details: error instanceof Error ? error.message : 'Unknown error',
+    // Step 1: Create tracking
+    const createResponse = await fetch('https://api.trackingmore.com/v4/trackings/create', {
+      method: 'POST',
+      headers: {
+        'Tracking-Api-Key': apiKey,
+        'Content-Type': 'application/json'
       },
-      { status: 500 }
+      body: JSON.stringify({
+        tracking_number: trackingNumber,
+        carrier_code: carrier || 'auto'
+      })
+    });
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text();
+      console.error('TrackingMore create error:', errorText);
+    }
+
+    // Step 2: Get tracking details
+    const getResponse = await fetch(
+      `https://api.trackingmore.com/v4/trackings/get?tracking_numbers=${encodeURIComponent(trackingNumber)}`,
+      {
+        headers: {
+          'Tracking-Api-Key': apiKey,
+          'Content-Type': 'application/json'
+        }
+      }
     );
+
+    if (!getResponse.ok) {
+      return NextResponse.json({
+        success: false,
+        error: 'לא הצלחנו למצוא את המשלוח - נסה שוב'
+      }, { status: 404 });
+    }
+
+    const trackingData = await getResponse.json();
+
+    // Process response
+    if (trackingData.meta && trackingData.meta.code === 200 && trackingData.data && trackingData.data.length > 0) {
+      const shipment = trackingData.data[0];
+      
+      const result = {
+        success: true,
+        tracking_number: shipment.tracking_number,
+        carrier: {
+          code: shipment.carrier_code,
+          name: getCarrierNameHebrew(shipment.carrier_code)
+        },
+        status: {
+          code: shipment.status,
+          text: getStatusHebrew(shipment.status),
+          lastUpdate: shipment.updated_at
+        },
+        origin: shipment.origin_info ? {
+          country: shipment.origin_info.country,
+          city: shipment.origin_info.city
+        } : undefined,
+        destination: shipment.destination_info ? {
+          country: shipment.destination_info.country,
+          city: shipment.destination_info.city
+        } : undefined,
+        transit_time: shipment.transit_time,
+        days_after_shipping: shipment.days_after_shipping,
+        events: shipment.origin_info && shipment.origin_info.trackinfo ? 
+          shipment.origin_info.trackinfo.map((event: any) => ({
+            date: event.Date || event.checkpoint_date,
+            status: event.StatusDescription,
+            location: event.Details,
+            checkpoint_date: event.checkpoint_date
+          })) : [],
+        estimated_delivery: shipment.scheduled_delivery_date
+      };
+
+      return NextResponse.json(result);
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: 'לא נמצא מידע עבור מספר מעקב זה',
+        trackingNumber: trackingNumber
+      }, { status: 404 });
+    }
+
+  } catch (error) {
+    console.error('Track API error:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'שגיאה בשרת - נסה שוב מאוחר יותר'
+    }, { status: 500 });
   }
 }
 
-// תמיכה ב-CORS (אם צריך)
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+// Helper functions for Hebrew translation
+function getCarrierNameHebrew(code: string): string {
+  const carriers: { [key: string]: string } = {
+    'zim': 'ZIM - צים',
+    'maersk': 'Maersk',
+    'msc': 'MSC',
+    'cma-cgm': 'CMA CGM',
+    'israel-post': 'דואר ישראל',
+    'dhl': 'DHL',
+    'fedex': 'FedEx',
+    'ups': 'UPS',
+    'el-al-cargo': 'אל על קרגו',
+    'lionwheel': 'ליונוהיל',
+    'chita-express': 'צ\'יטה אקספרס'
+  };
+  return carriers[code] || code.toUpperCase();
+}
+
+function getStatusHebrew(status: string): string {
+  const statuses: { [key: string]: string } = {
+    'pending': '⏳ ממתין',
+    'transit': '🚢 בדרך',
+    'InfoReceived': '📋 מידע התקבל',
+    'InTransit': '🌊 בהובלה',
+    'OutForDelivery': '🚚 יצא למשלוח',
+    'pickup': '📦 נאסף',
+    'delivered': '✅ נמסר',
+    'Delivered': '✅ נמסר ליעד',
+    'undelivered': '❌ לא נמסר',
+    'exception': '⚠️ חריג',
+    'expired': '⌛ פג תוקף'
+  };
+  return statuses[status] || status;
 }
