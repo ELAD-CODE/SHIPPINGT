@@ -3,8 +3,44 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Build Status](https://img.shields.io/badge/Build-✅_Passing-green)](https://github.com)
+[![Status](https://img.shields.io/badge/Status-⚠️_Dev_Ready-yellow)](SETUP.md)
 
 **שירות מקצועי למעקב משלוחים + טיפול מלא ביבוא, יצוא ושחרור סחורה מהמכס**
+
+## ⚡ Quick Start
+
+```bash
+npm install
+cp .env.example .env.local  # Configure DATABASE_URL and TRACKINGMORE_API_KEY
+npx prisma migrate dev --name init
+npm run dev
+# Visit http://localhost:3000
+```
+
+👉 **Full setup instructions:** [SETUP.md](SETUP.md)
+📋 **Code Review & Architecture:** [REVIEW_REPORT.md](REVIEW_REPORT.md)
+
+## 📊 Project Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Build | ✅ Passing | `npm run build` works |
+| TypeScript | ✅ Fixed | All type errors resolved |
+| Development | ⚠️ Needs Setup | Requires .env.local and database |
+| Production | ❌ Not Ready | See [REVIEW_REPORT.md](REVIEW_REPORT.md) |
+
+### Recent Fixes (Jan 21, 2026)
+- ✅ Fixed 10+ TypeScript compilation errors
+- ✅ Added component type safety
+- ✅ Upgraded Prisma v7 → v5 for stability
+- ✅ Comprehensive code review completed
+
+## 🔗 Documentation
+
+- [SETUP.md](SETUP.md) - Local development setup guide
+- [REVIEW_REPORT.md](REVIEW_REPORT.md) - Full code review with fixes
+- [SERVICES.md](SERVICES.md) - Service offerings and pricing (if available)
 
 <p align="center">
   <img src="https://img.shields.io/badge/🚢-Shipping_Tracking-blue" alt="Shipping" />
