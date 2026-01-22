@@ -180,3 +180,113 @@ model Analytics {
   
   @@unique([date])
 }
+
+// ============================================================================
+// טבלת משלוחים - תמיכה מלאה במשלוחים אוויריים וימיים
+// ============================================================================
+enum ShipmentType {
+  AIR         // משלוח אווירי (Air Freight)
+  SEA         // משלוח ימי (Sea Freight)
+  ROAD        // משלוח יבשתי (Road Freight)
+  EXPRESS     // משלוח אקספרס (DHL, FedEx, etc.)
+}
+
+model Shipment {
+  id              String       @id @default(cuid())
+  
+  // ==== Basic Shipment Info ====
+  trackingNumber  String       @unique
+  shipmentType    ShipmentType @default(EXPRESS)
+  
+  // ==== Customer Info ====
+  customerName    String?
+  customerEmail   String?
+  customerPhone   String?
+  
+  // ==== Origin & Destination ====
+  originCountry   String?      // ISO country code (e.g., CN, US)
+  originPort      String?      // Port or airport code
+  originAddress   String?
+  
+  destinationCountry String?   // ISO country code (IL for Israel)
+  destinationPort    String?   // Port or airport code (e.g., ILHFA for Haifa)
+  destinationAddress String?
+  
+  // ==== Air Freight Specific Fields ====
+  airWaybillNumber String?     // AWB number (e.g., 157-12345678)
+  flightNumber     String?
+  airline          String?      // Carrier name
+  aircraftType     String?
+  
+  // ==== Sea Freight Specific Fields ====
+  billOfLading     String?     // B/L number (e.g., MAEU123456789)
+  containerNumber  String?     // Container number (e.g., MSCU1234567)
+  vesselName       String?     // Name of the vessel/ship
+  voyageNumber     String?     // Voyage/trip number
+  containerType    String?     // 20ft, 40ft, 40HC, etc.
+  containerCount   Int?        // Number of containers (default: 1)
+  
+  // ==== Document Management ====
+  blDocumentUrl    String?     // URL to B/L document (S3, etc.)
+  invoiceUrl       String?     // Commercial invoice
+  packingListUrl   String?     // Packing list
+  certificateUrl   String?     // Certificate of origin, etc.
+  
+  // ==== Cargo Details ====
+  cargoDescription String?     // Description of goods
+  hsCode           String?     // Harmonized System code
+  weight           Float?      // Weight in kg
+  volume           Float?      // Volume in m³
+  quantity         Int?        // Number of pieces/packages
+  declaredValue    Float?      // Declared customs value
+  currency         String?     @default("USD")
+  
+  // ==== Status & Timeline ====
+  status           String       @default("booked") // booked, in_transit, customs, delivered, etc.
+  statusHe         String?      // Hebrew status translation
+  
+  bookingDate      DateTime?
+  departureDate    DateTime?
+  arrivalDate      DateTime?
+  estimatedArrival DateTime?
+  deliveryDate     DateTime?
+  
+  // ==== Customs & Clearance ====
+  customsStatus    String?      // pending, in_progress, cleared, held
+  customsDate      DateTime?
+  customsNotes     String?
+  dutyPaid         Boolean      @default(false)
+  dutyAmount       Float?
+  
+  // ==== Tracking & External Data ====
+  carrier          String?      // Carrier/shipping line (e.g., MAERSK, MSC)
+  carrierCode      String?      // Carrier code for API lookups
+  externalTrackingData Json?    // JSON from TrackingMore/SeaRates API
+  
+  // ==== Internal Management ====
+  assignedTo       String?      // Employee handling this shipment
+  priority         String       @default("normal") // low, normal, high, urgent
+  notes            String?      // Internal notes
+  tags             String[]     // Tags for categorization
+  
+  // ==== Timestamps ====
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // ==== Relationships ====
+  // Link to leads if customer requested help
+  leadId           String?
+  
+  // ==== Indexes for Performance ====
+  @@index([trackingNumber])
+  @@index([shipmentType])
+  @@index([status])
+  @@index([customsStatus])
+  @@index([customerEmail])
+  @@index([billOfLading])
+  @@index([containerNumber])
+  @@index([airWaybillNumber])
+  @@index([createdAt])
+  @@index([departureDate])
+  @@index([arrivalDate])
+}

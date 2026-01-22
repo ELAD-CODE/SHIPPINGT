@@ -1,0 +1,4 @@
+trackingNumber,shipmentType,customerName,customerEmail,customerPhone,originCountry,originPort,destinationCountry,destinationPort,airWaybillNumber,billOfLading,containerNumber,vesselName,voyageNumber,containerType,containerCount,cargoDescription,weight,volume,quantity,declaredValue,currency,status
+MAEU123456789,SEA,ABC Trading Ltd,info@abctrading.com,+972501234567,CN,CNSHA,IL,ILHFA,,MAEU123456789,MSCU1234567,MSC ISTANBUL,026W,40HC,1,Electronic components,18000,67.5,100,25000,USD,in_transit
+157-12345678,AIR,Fast Imports,contact@fastimports.com,+972509876543,US,USJFK,IL,ILLOD,157-12345678,,,,,,,Medical equipment,250.5,5.2,50,15000,USD,customs
+1234567890,EXPRESS,John Smith,john@example.com,+972521234567,GB,GBLON,IL,ILTLV,,,,,,,,Samples,5.5,0.5,10,500,EUR,delivered
