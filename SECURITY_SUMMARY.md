@@ -13,12 +13,14 @@
 
 **Initial Scan:** 5 alerts (workflow permissions)  
 **After Fix:** 0 alerts  
+**Dependency Fix:** actions/download-artifact upgraded to v4.1.3
 
 **Fixed Issues:**
 1. Added explicit `permissions` blocks to all GitHub Actions jobs
 2. Configured minimal required permissions (principle of least privilege)
 3. Enabled `security-events: write` for Gitleaks secret scanning
 4. Enabled `id-token: write` for AWS OIDC authentication
+5. **Updated actions/download-artifact to v4.1.3** (fixes CVE-2024-XXXX - Arbitrary File Write vulnerability)
 
 ### Gitleaks Secret Scanning
 ✅ **CONFIGURED** - Will run on every PR and push to staging
