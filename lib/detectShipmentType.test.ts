@@ -1,47 +1,42 @@
-import { describe, it, expect } from '@jest/globals'; // Add this
-import { detectShipmentType, ShipmentTypes, isValidShipmentNumber, getFormatExplanation } from './detectShipmentType';
+import { describe, it, expect } from '@jest/globals';
+import { detectShipmentType, ShipmentTypes } from './detectShipmentType';
 
 describe('detectShipmentType', () => {
-  it('should return the correct shipment type for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const expectedType = ShipmentTypes.TYPE_A;
-    const result = detectShipmentType(shipmentNumber);
-    expect(result).toBe(expectedType);
+  it('should detect air waybill correctly', () => {
+    const result = detectShipmentType('157-12345678');
+    expect(result.type).toBe(ShipmentTypes.AIR_WAYBILL);
+    expect(result.valid).toBe(true);
   });
 
-  it('should return null for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = detectShipmentType(shipmentNumber);
-    expect(result).toBeNull();
-  });
-});
-
-describe('isValidShipmentNumber', () => {
-  it('should return true for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const result = isValidShipmentNumber(shipmentNumber);
-    expect(result).toBe(true);
+  it('should detect container number correctly', () => {
+    const result = detectShipmentType('MSCU1234567');
+    expect(result.type).toBe(ShipmentTypes.CONTAINER);
+    expect(result.valid).toBe(true);
   });
 
-  it('should return false for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = isValidShipmentNumber(shipmentNumber);
-    expect(result).toBe(false);
-  });
-});
-
-describe('getFormatExplanation', () => {
-  it('should return the correct format explanation for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const expectedExplanation = 'Format: 9 digits';
-    const result = getFormatExplanation(shipmentNumber);
-    expect(result).toBe(expectedExplanation);
+  it('should detect bill of lading correctly', () => {
+    const result = detectShipmentType('MAEU123456789');
+    expect(result.type).toBe(ShipmentTypes.BILL_OF_LADING);
+    expect(result.valid).toBe(true);
   });
 
-  it('should return null for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = getFormatExplanation(shipmentNumber);
-    expect(result).toBeNull();
+  it('should return unknown for invalid shipment number', () => {
+    const result = detectShipmentType('invalid');
+    expect(result.type).toBe(ShipmentTypes.UNKNOWN);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should handle empty input', () => {
+    const result = detectShipmentType('');
+    expect(result.type).toBe(ShipmentTypes.UNKNOWN);
+    expect(result.valid).toBe(false);
+  });
+
+  it('should normalize whitespace and hyphens', () => {
+    const result1 = detectShipmentType('157 12345678');
+    const result2 = detectShipmentType('157-12345678');
+    expect(result1.type).toBe(ShipmentTypes.AIR_WAYBILL);
+    expect(result2.type).toBe(ShipmentTypes.AIR_WAYBILL);
   });
 });
 

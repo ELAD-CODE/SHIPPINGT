@@ -157,10 +157,10 @@ export const config = {
   // ==== Security ====
   security: {
     sessionSecret: (() => {
-      const secret = getEnv('SESSION_SECRET', 'default-dev-secret-change-in-production')
+      const secret = getEnv('SESSION_SECRET', 'dev-secret-do-not-use-in-production-replace-me')
       const isProduction = process.env.NODE_ENV === 'production'
-      if (isProduction && secret === 'default-dev-secret-change-in-production') {
-        throw new ConfigValidationError('SESSION_SECRET must be set in production')
+      if (isProduction && (secret === 'dev-secret-do-not-use-in-production-replace-me' || secret.includes('REPLACE_WITH'))) {
+        throw new ConfigValidationError('SESSION_SECRET must be set to a real value in production')
       }
       return secret
     })(),
