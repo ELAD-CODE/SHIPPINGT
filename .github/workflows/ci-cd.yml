@@ -18,6 +18,9 @@ jobs:
   secret-scan:
     name: 🔐 Secret Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,6 +40,8 @@ jobs:
     name: 🏗️ Build, Lint & Test
     runs-on: ubuntu-latest
     needs: secret-scan  # Only proceed if no secrets detected
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout code
@@ -98,6 +103,8 @@ jobs:
     name: 🛡️ Security Audit
     runs-on: ubuntu-latest
     needs: secret-scan
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout code
@@ -128,6 +135,9 @@ jobs:
     needs: [build-and-test, security-audit]
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
     environment: staging
+    permissions:
+      contents: read
+      id-token: write  # For AWS OIDC authentication
     
     steps:
       - name: Checkout code
@@ -178,6 +188,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [secret-scan, build-and-test, security-audit]
     if: always()
+    permissions:
+      contents: read
     
     steps:
       - name: Check results

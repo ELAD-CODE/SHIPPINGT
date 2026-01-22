@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import type { 
   CreateShipmentRequest, 
   ShipmentResponse, 
   ShipmentsListResponse,
-  ValidationError 
+  ValidationError,
+  Shipment
 } from '@/types/shipment';
 
-const prisma = new PrismaClient();
+// Helper function to convert Prisma shipment to API Shipment type
+function toShipmentType(prismaShipment: any): Shipment {
+  return {
+    ...prismaShipment,
+    createdAt: prismaShipment.createdAt.toISOString(),
+    updatedAt: prismaShipment.updatedAt.toISOString(),
+    lastUpdate: prismaShipment.lastUpdate?.toISOString(),
+    estimatedArrival: prismaShipment.estimatedArrival?.toISOString(),
+    actualArrival: prismaShipment.actualArrival?.toISOString(),
+  } as Shipment;
+}
 
 /**
  * GET /api/shipments
@@ -23,7 +35,7 @@ export async function GET(request: NextRequest) {
     const customerEmail = searchParams.get('customerEmail');
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.ShipmentWhereInput = {};
     if (shipmentType && (shipmentType === 'air' || shipmentType === 'sea')) {
       where.shipmentType = shipmentType;
     }
@@ -48,7 +60,7 @@ export async function GET(request: NextRequest) {
     const response: ShipmentsListResponse = {
       success: true,
       data: {
-        shipments: shipments as any, // Cast due to Prisma type vs our union type
+        shipments: shipments.map(toShipmentType),
         total,
         page,
         perPage,
@@ -143,7 +155,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Shipment created successfully',
       message_he: 'המשלוח נוסף בהצלחה',
-      data: shipment as any, // Cast due to Prisma type vs our union type
+      data: toShipmentType(shipment),
     };
 
     return NextResponse.json(response, { status: 201 });

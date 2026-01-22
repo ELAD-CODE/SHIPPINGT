@@ -217,10 +217,17 @@ export function getEnvStatus(): {
   return { required, optional };
 }
 
-// Run checks automatically when imported (server-side only)
-if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
-  // Skip during Next.js build process
-  if (!process.env.SKIP_ENV_VALIDATION) {
-    performStartupChecks(true);
+/**
+ * Export for explicit initialization
+ * Call this in your application entry point
+ */
+export function initializeStartupChecks(exitOnError: boolean = true): void {
+  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
+    if (!process.env.SKIP_ENV_VALIDATION) {
+      performStartupChecks(exitOnError);
+    }
   }
 }
+
+// Note: Auto-run on import removed for better testability
+// Call initializeStartupChecks() explicitly in your app entry point if needed

@@ -221,14 +221,6 @@ if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
   // Only validate on server side, not during Next.js build
   if (!process.env.SKIP_ENV_VALIDATION) {
     validateConfig()
-    
-    // Import and run startup checks
-    import('./startup-check').then(({ performStartupChecks }) => {
-      // Startup checks already run on import, but we can call again if needed
-      // performStartupChecks(true);
-    }).catch(err => {
-      console.error('Failed to import startup-check:', err);
-    });
   }
 }
 
