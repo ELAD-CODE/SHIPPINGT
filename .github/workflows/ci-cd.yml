@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+# Global permissions
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: '18'
 
@@ -18,6 +22,9 @@ jobs:
   secret-scanning:
     name: 🔐 Secret Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,6 +44,8 @@ jobs:
     name: 🏗️ Build & Test
     runs-on: ubuntu-latest
     needs: secret-scanning  # Only run if secret scanning passes
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout code
@@ -103,6 +112,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    permissions:
+      contents: read
+      id-token: write  # For OIDC authentication with AWS
     
     steps:
       - name: Checkout code
@@ -157,6 +169,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [secret-scanning, build-and-test]
     if: always()
+    permissions:
+      contents: read
     
     steps:
       - name: Check job status
