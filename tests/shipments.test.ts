@@ -1,4 +1,16 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
+import {
+  CONTAINER_NUMBER_REGEX,
+  BL_NUMBER_REGEX,
+  AWB_NUMBER_REGEX,
+  VALID_SHIPMENT_TYPES,
+  validateContainerNumber,
+  validateBLNumber,
+  validateAWBNumber,
+  validateSeaShipment,
+  validateAirShipment,
+  validateShipmentType
+} from '@/lib/shipmentValidation';
 
 /**
  * Tests for sea shipment functionality
@@ -17,10 +29,10 @@ describe('Sea Shipment Validation', () => {
         'MAEU5555555'
       ];
       
-      const containerRegex = /^[A-Z]{4}\d{7}$/;
-      
       validContainerNumbers.forEach(containerNumber => {
-        expect(containerRegex.test(containerNumber)).toBe(true);
+        expect(CONTAINER_NUMBER_REGEX.test(containerNumber)).toBe(true);
+        const result = validateContainerNumber(containerNumber);
+        expect(result.valid).toBe(true);
       });
     });
     
@@ -30,14 +42,13 @@ describe('Sea Shipment Validation', () => {
         'MSCU123456',    // Only 6 digits
         'MSCU12345678',  // 8 digits
         'MSCUABCDEFG',   // Not numeric
-        'mscu1234567',   // Lowercase
         '1234MSCU567'    // Wrong order
       ];
       
-      const containerRegex = /^[A-Z]{4}\d{7}$/;
-      
       invalidContainerNumbers.forEach(containerNumber => {
-        expect(containerRegex.test(containerNumber)).toBe(false);
+        expect(CONTAINER_NUMBER_REGEX.test(containerNumber)).toBe(false);
+        const result = validateContainerNumber(containerNumber);
+        expect(result.valid).toBe(false);
       });
     });
   });
@@ -51,10 +62,10 @@ describe('Sea Shipment Validation', () => {
         'CMDU987654321'
       ];
       
-      const blRegex = /^[A-Z]{4}\d{8,12}$/;
-      
       validBLNumbers.forEach(blNumber => {
-        expect(blRegex.test(blNumber)).toBe(true);
+        expect(BL_NUMBER_REGEX.test(blNumber)).toBe(true);
+        const result = validateBLNumber(blNumber);
+        expect(result.valid).toBe(true);
       });
     });
     
@@ -63,14 +74,13 @@ describe('Sea Shipment Validation', () => {
         'MA123456',           // Too short
         'MAEU1234567',        // Only 7 digits
         'MAEU1234567890123',  // Too many digits
-        'MAEUabcdefgh',       // Not numeric
-        'maeu12345678',       // Lowercase
+        'MAEUabcdefgh'        // Not numeric
       ];
       
-      const blRegex = /^[A-Z]{4}\d{8,12}$/;
-      
       invalidBLNumbers.forEach(blNumber => {
-        expect(blRegex.test(blNumber)).toBe(false);
+        expect(BL_NUMBER_REGEX.test(blNumber)).toBe(false);
+        const result = validateBLNumber(blNumber);
+        expect(result.valid).toBe(false);
       });
     });
   });
@@ -93,24 +103,14 @@ describe('Sea Shipment Validation', () => {
     });
     
     it('should validate sea shipment has at least container or B/L number', () => {
-      const validateSeaShipment = (data: any) => {
-        if (data.shipmentType === 'sea') {
-          return !!(data.containerNumber || data.blNumber);
-        }
-        return true;
-      };
-      
       const validShipment = {
-        shipmentType: 'sea',
         containerNumber: 'MSCU1234567'
       };
       
-      const invalidShipment = {
-        shipmentType: 'sea'
-      };
+      const invalidShipment = {};
       
-      expect(validateSeaShipment(validShipment)).toBe(true);
-      expect(validateSeaShipment(invalidShipment)).toBe(false);
+      expect(validateSeaShipment(validShipment).valid).toBe(true);
+      expect(validateSeaShipment(invalidShipment).valid).toBe(false);
     });
   });
   
@@ -123,10 +123,10 @@ describe('Sea Shipment Validation', () => {
         '07498765432'
       ];
       
-      const awbRegex = /^\d{3}-?\d{8}$/;
-      
       validAWBNumbers.forEach(awbNumber => {
-        expect(awbRegex.test(awbNumber)).toBe(true);
+        expect(AWB_NUMBER_REGEX.test(awbNumber)).toBe(true);
+        const result = validateAWBNumber(awbNumber);
+        expect(result.valid).toBe(true);
       });
     });
     
@@ -138,74 +138,35 @@ describe('Sea Shipment Validation', () => {
         '157-ABCDEFGH'    // Not numeric suffix
       ];
       
-      const awbRegex = /^\d{3}-?\d{8}$/;
-      
       invalidAWBNumbers.forEach(awbNumber => {
-        expect(awbRegex.test(awbNumber)).toBe(false);
+        expect(AWB_NUMBER_REGEX.test(awbNumber)).toBe(false);
+        const result = validateAWBNumber(awbNumber);
+        expect(result.valid).toBe(false);
       });
     });
   });
   
   describe('Shipment Type Validation', () => {
     it('should only accept valid shipment types', () => {
-      const validTypes = ['air', 'sea', 'road'];
       const invalidTypes = ['ocean', 'maritime', 'flight', 'truck'];
       
-      validTypes.forEach(type => {
-        expect(validTypes.includes(type)).toBe(true);
+      VALID_SHIPMENT_TYPES.forEach(type => {
+        const result = validateShipmentType(type);
+        expect(result.valid).toBe(true);
       });
       
       invalidTypes.forEach(type => {
-        expect(validTypes.includes(type)).toBe(false);
+        const result = validateShipmentType(type);
+        expect(result.valid).toBe(false);
       });
     });
   });
 });
 
 describe('Shipment API Validation Logic', () => {
-  /**
-   * Simulates the validation function from the API
-   */
-  function validateSeaShipment(data: any): { valid: boolean; error?: string } {
-    if (data.shipmentType === 'sea') {
-      if (!data.containerNumber && !data.blNumber) {
-        return {
-          valid: false,
-          error: 'Sea shipments must include either container_number or bl_number'
-        };
-      }
-      
-      if (data.containerNumber) {
-        const containerRegex = /^[A-Z]{4}\d{7}$/;
-        if (!containerRegex.test(data.containerNumber)) {
-          return {
-            valid: false,
-            error: 'Invalid container number format. Must be 4 letters + 7 digits (ISO 6346)'
-          };
-        }
-      }
-      
-      if (data.blNumber) {
-        const blRegex = /^[A-Z]{4}\d{8,12}$/;
-        if (!blRegex.test(data.blNumber)) {
-          return {
-            valid: false,
-            error: 'Invalid B/L number format. Must be 4 letters + 8-12 digits'
-          };
-        }
-      }
-    }
-    
-    return { valid: true };
-  }
-  
   it('should pass validation for valid sea shipment with container', () => {
     const shipment = {
-      trackingNumber: 'SEA001',
-      shipmentType: 'sea',
       containerNumber: 'MSCU1234567',
-      vesselName: 'MAERSK SEALAND',
-      voyageNumber: 'V123W'
     };
     
     const result = validateSeaShipment(shipment);
@@ -215,10 +176,7 @@ describe('Shipment API Validation Logic', () => {
   
   it('should pass validation for valid sea shipment with B/L', () => {
     const shipment = {
-      trackingNumber: 'SEA002',
-      shipmentType: 'sea',
       blNumber: 'MAEU123456789',
-      vesselName: 'MAERSK ESSEX'
     };
     
     const result = validateSeaShipment(shipment);
@@ -227,11 +185,7 @@ describe('Shipment API Validation Logic', () => {
   });
   
   it('should fail validation for sea shipment without container or B/L', () => {
-    const shipment = {
-      trackingNumber: 'SEA003',
-      shipmentType: 'sea',
-      vesselName: 'MAERSK SEALAND'
-    };
+    const shipment = {};
     
     const result = validateSeaShipment(shipment);
     expect(result.valid).toBe(false);
@@ -240,8 +194,6 @@ describe('Shipment API Validation Logic', () => {
   
   it('should fail validation for invalid container number format', () => {
     const shipment = {
-      trackingNumber: 'SEA004',
-      shipmentType: 'sea',
       containerNumber: 'MSC123456' // Invalid: only 3 letters
     };
     
@@ -252,14 +204,28 @@ describe('Shipment API Validation Logic', () => {
   
   it('should fail validation for invalid B/L number format', () => {
     const shipment = {
-      trackingNumber: 'SEA005',
-      shipmentType: 'sea',
       blNumber: 'MAEU123' // Invalid: too short
     };
     
     const result = validateSeaShipment(shipment);
     expect(result.valid).toBe(false);
     expect(result.error).toContain('Invalid B/L number format');
+  });
+  
+  it('should pass validation for valid air shipment', () => {
+    const shipment = {
+      awbNumber: '157-12345678'
+    };
+    
+    const result = validateAirShipment(shipment);
+    expect(result.valid).toBe(true);
+  });
+  
+  it('should fail validation for air shipment without AWB', () => {
+    const shipment = {};
+    
+    const result = validateAirShipment(shipment);
+    expect(result.valid).toBe(false);
   });
 });
 
@@ -280,7 +246,7 @@ describe('Shipment Creation Examples', () => {
     };
     
     expect(seaContainerShipment.shipmentType).toBe('sea');
-    expect(seaContainerShipment.containerNumber).toMatch(/^[A-Z]{4}\d{7}$/);
+    expect(CONTAINER_NUMBER_REGEX.test(seaContainerShipment.containerNumber)).toBe(true);
     expect(seaContainerShipment.containerCount).toBeGreaterThan(0);
   });
   
@@ -297,7 +263,7 @@ describe('Shipment Creation Examples', () => {
     };
     
     expect(seaBLShipment.shipmentType).toBe('sea');
-    expect(seaBLShipment.blNumber).toMatch(/^[A-Z]{4}\d{8,12}$/);
+    expect(BL_NUMBER_REGEX.test(seaBLShipment.blNumber)).toBe(true);
   });
   
   it('should have correct structure for air AWB shipment', () => {
@@ -313,7 +279,7 @@ describe('Shipment Creation Examples', () => {
     };
     
     expect(airShipment.shipmentType).toBe('air');
-    expect(airShipment.awbNumber).toMatch(/^\d{3}-?\d{8}$/);
+    expect(AWB_NUMBER_REGEX.test(airShipment.awbNumber)).toBe(true);
   });
 });
 

@@ -1,0 +1,3 @@
+tracking_number,shipment_type,carrier,origin,destination,awb_number,flight_number,airline,estimated_delivery,status
+AWB001,air,DHL,Frankfurt,Tel Aviv,157-12345678,LY1234,EL AL,2026-01-25,in_transit
+AWB002,air,FedEx,Memphis,Ben Gurion,074-98765432,FX5678,FEDEX,2026-01-23,customs

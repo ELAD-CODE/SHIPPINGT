@@ -1,0 +1,3 @@
+tracking_number,shipment_type,carrier,origin,destination,container_number,container_type,container_count,vessel_name,voyage_number,port_of_loading,port_of_discharge,eta,status
+CONT001,sea,MAERSK,Shanghai Port,Ashdod Port,MSCU1234567,40HC,2,MAERSK SEALAND,V123W,CNSHA,ILASH,2026-02-15,in_transit
+CONT002,sea,MSC,Hong Kong,Haifa Port,MEDU7654321,20FT,1,MSC MEDITERRANEAN,2601E,HKHKG,ILHFA,2026-02-10,at_port

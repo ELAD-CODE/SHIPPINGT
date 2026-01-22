@@ -1,0 +1,3 @@
+tracking_number,shipment_type,carrier,origin,destination,bl_number,vessel_name,voyage_number,container_count,port_of_loading,port_of_discharge,eta,status
+BL001,sea,MAERSK,Shanghai,Ashdod,MAEU123456789,MAERSK ESSEX,V456N,2,CNSHA,ILASH,2026-02-15,in_transit
+BL002,sea,CMA CGM,Singapore,Haifa,CMDU987654321,CMA CGM TAGE,123S,5,SGSIN,ILHFA,2026-02-12,customs

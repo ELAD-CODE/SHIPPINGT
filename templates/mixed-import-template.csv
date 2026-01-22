@@ -1,0 +1,4 @@
+tracking_number,shipment_type,carrier,origin,destination,container_number,vessel_name,voyage_number,bl_number,container_count,awb_number,status
+SHIP001,sea,MAERSK,Shanghai,Ashdod,MSCU1234567,MAERSK LINE,V123,MAEU123456789,2,,in_transit
+SHIP002,air,DHL,Frankfurt,Tel Aviv,,,,,157-12345678,delivered
+SHIP003,sea,MSC,Singapore,Haifa,MEDU9876543,MSC OPERA,456E,MSCU987654321,1,,at_port

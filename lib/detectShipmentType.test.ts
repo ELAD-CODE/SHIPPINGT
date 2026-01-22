@@ -36,6 +36,3 @@ describe('detectShipmentType', () => {
     expect(result.valid).toBe(false);
   });
 });
-
-// Current order - GOOD (container checked before B/L)
-// Keep as-is, more specific patterns first ✅

@@ -1,74 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, ShipmentType } from '@prisma/client';
+import {
+  validateSeaShipment,
+  validateAirShipment,
+  validateShipmentType,
+  VALID_SHIPMENT_TYPES,
+  type ValidShipmentType
+} from '@/lib/shipmentValidation';
 
 const prisma = new PrismaClient();
-
-/**
- * Validation for sea shipments
- * Must have at least one of: containerNumber or blNumber
- */
-function validateSeaShipment(data: any): { valid: boolean; error?: string } {
-  if (data.shipmentType === 'sea') {
-    if (!data.containerNumber && !data.blNumber) {
-      return {
-        valid: false,
-        error: 'Sea shipments must include either container_number or bl_number'
-      };
-    }
-    
-    // Validate container number format (ISO 6346)
-    if (data.containerNumber) {
-      const containerRegex = /^[A-Z]{4}\d{7}$/;
-      if (!containerRegex.test(data.containerNumber)) {
-        return {
-          valid: false,
-          error: 'Invalid container number format. Must be 4 letters + 7 digits (ISO 6346)'
-        };
-      }
-    }
-    
-    // Validate B/L number format
-    if (data.blNumber) {
-      const blRegex = /^[A-Z]{4}\d{8,12}$/;
-      if (!blRegex.test(data.blNumber)) {
-        return {
-          valid: false,
-          error: 'Invalid B/L number format. Must be 4 letters + 8-12 digits'
-        };
-      }
-    }
-  }
-  
-  return { valid: true };
-}
-
-/**
- * Validation for air shipments
- * Must have awbNumber
- */
-function validateAirShipment(data: any): { valid: boolean; error?: string } {
-  if (data.shipmentType === 'air') {
-    if (!data.awbNumber && !data.trackingNumber) {
-      return {
-        valid: false,
-        error: 'Air shipments must include awb_number or tracking_number'
-      };
-    }
-    
-    // Validate AWB format (XXX-XXXXXXXX)
-    if (data.awbNumber) {
-      const awbRegex = /^\d{3}-?\d{8}$/;
-      if (!awbRegex.test(data.awbNumber)) {
-        return {
-          valid: false,
-          error: 'Invalid AWB number format. Must be XXX-XXXXXXXX'
-        };
-      }
-    }
-  }
-  
-  return { valid: true };
-}
 
 /**
  * GET /api/shipments - List all shipments
@@ -138,17 +78,20 @@ export async function POST(request: NextRequest) {
     }
     
     // Validate shipment type
-    const validTypes: ShipmentType[] = ['air', 'sea', 'road'];
-    if (!validTypes.includes(body.shipmentType)) {
+    if (!VALID_SHIPMENT_TYPES.includes(body.shipmentType as ValidShipmentType)) {
+      const typeValidation = validateShipmentType(body.shipmentType);
       return NextResponse.json(
-        { success: false, error: 'shipment_type must be one of: air, sea, road' },
+        { success: false, error: typeValidation.error },
         { status: 400 }
       );
     }
     
     // Type-specific validation
     if (body.shipmentType === 'sea') {
-      const validation = validateSeaShipment(body);
+      const validation = validateSeaShipment({
+        containerNumber: body.containerNumber,
+        blNumber: body.blNumber
+      });
       if (!validation.valid) {
         return NextResponse.json(
           { success: false, error: validation.error },
@@ -158,7 +101,10 @@ export async function POST(request: NextRequest) {
     }
     
     if (body.shipmentType === 'air') {
-      const validation = validateAirShipment(body);
+      const validation = validateAirShipment({
+        awbNumber: body.awbNumber,
+        trackingNumber: body.trackingNumber
+      });
       if (!validation.valid) {
         return NextResponse.json(
           { success: false, error: validation.error },
