@@ -1,49 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateSeaShipment, isSeaShipment } from '@/lib/validation/shipment';
 
 /**
  * Shipments API Route
  * Handles CRUD operations for shipments with sea freight support
  */
-
-// Validation helpers
-function validateContainerNumber(containerNumber: string): boolean {
-  // ISO 6346 format: 4 letters + 7 digits
-  const regex = /^[A-Z]{4}[0-9]{7}$/;
-  if (!regex.test(containerNumber)) {
-    return false;
-  }
-  
-  // Optional: Validate check digit (position 10)
-  // This is a simplified check - full ISO 6346 validation is more complex
-  return true;
-}
-
-function validateSeaShipment(data: any): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  
-  if (!data.containerNumber) {
-    errors.push('container_number is required for sea shipments');
-  } else if (!validateContainerNumber(data.containerNumber)) {
-    errors.push('container_number must be in ISO 6346 format (e.g., MSCU1234567)');
-  }
-  
-  if (!data.blNumber) {
-    errors.push('bl_number (Bill of Lading) is required for sea shipments');
-  }
-  
-  if (!data.vesselName) {
-    errors.push('vessel_name is required for sea shipments');
-  }
-  
-  if (!data.voyageNumber) {
-    errors.push('voyage_number is required for sea shipments');
-  }
-  
-  return {
-    valid: errors.length === 0,
-    errors
-  };
-}
 
 // POST /api/shipments - Create new shipment
 export async function POST(req: NextRequest) {
@@ -74,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Sea shipment specific validation
-    if (data.shipmentType === 'sea' || data.shipmentType === 'ocean') {
+    if (isSeaShipment(data.shipmentType)) {
       const validation = validateSeaShipment(data);
       if (!validation.valid) {
         return NextResponse.json(

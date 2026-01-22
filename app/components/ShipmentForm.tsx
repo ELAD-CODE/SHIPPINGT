@@ -4,6 +4,12 @@
  */
 
 import { useState } from 'react';
+import { 
+  validateContainerNumber, 
+  validateEmail, 
+  validateIsraeliPhone,
+  CONTAINER_NUMBER_REGEX 
+} from '@/lib/validation/shipment';
 
 interface ShipmentFormProps {
   initialData?: any;
@@ -87,7 +93,7 @@ export default function ShipmentForm({ initialData, onSubmit, onCancel }: Shipme
     if (formData.shipmentType === 'sea') {
       if (!formData.containerNumber) {
         newErrors.containerNumber = 'מספר קונטיינר הוא שדה חובה למשלוחים ימיים';
-      } else if (!/^[A-Z]{4}[0-9]{7}$/.test(formData.containerNumber)) {
+      } else if (!validateContainerNumber(formData.containerNumber)) {
         newErrors.containerNumber = 'מספר קונטיינר לא תקין (פורמט: ABCD1234567)';
       }
 
@@ -105,12 +111,12 @@ export default function ShipmentForm({ initialData, onSubmit, onCancel }: Shipme
     }
 
     // Email validation
-    if (formData.customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
+    if (formData.customerEmail && !validateEmail(formData.customerEmail)) {
       newErrors.customerEmail = 'כתובת אימייל לא תקינה';
     }
 
     // Phone validation (Israeli)
-    if (formData.customerPhone && !/^05\d{8}$/.test(formData.customerPhone.replace(/[-\s]/g, ''))) {
+    if (formData.customerPhone && !validateIsraeliPhone(formData.customerPhone)) {
       newErrors.customerPhone = 'מספר טלפון לא תקין (דוגמה: 0501234567)';
     }
 

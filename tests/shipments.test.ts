@@ -2,6 +2,17 @@
  * Tests for Shipment API with Sea Freight support
  */
 
+import { 
+  validateContainerNumber, 
+  validateSeaShipment,
+  validateBLNumber,
+  isSeaShipment,
+  isAirShipment,
+  isExpressShipment,
+  CONTAINER_NUMBER_REGEX,
+  BL_NUMBER_REGEX 
+} from '../lib/validation/shipment';
+
 describe('Shipment Validation', () => {
   describe('Container Number Validation', () => {
     test('should validate correct ISO 6346 format', () => {
@@ -13,8 +24,8 @@ describe('Shipment Validation', () => {
       ];
 
       validContainers.forEach(container => {
-        const regex = /^[A-Z]{4}[0-9]{7}$/;
-        expect(regex.test(container)).toBe(true);
+        expect(validateContainerNumber(container)).toBe(true);
+        expect(CONTAINER_NUMBER_REGEX.test(container)).toBe(true);
       });
     });
 
@@ -29,40 +40,13 @@ describe('Shipment Validation', () => {
       ];
 
       invalidContainers.forEach(container => {
-        const regex = /^[A-Z]{4}[0-9]{7}$/;
-        expect(regex.test(container)).toBe(false);
+        expect(validateContainerNumber(container)).toBe(false);
+        expect(CONTAINER_NUMBER_REGEX.test(container)).toBe(false);
       });
     });
   });
 
   describe('Sea Shipment Validation', () => {
-    function validateSeaShipment(data: any): { valid: boolean; errors: string[] } {
-      const errors: string[] = [];
-      
-      if (!data.containerNumber) {
-        errors.push('container_number is required for sea shipments');
-      } else if (!/^[A-Z]{4}[0-9]{7}$/.test(data.containerNumber)) {
-        errors.push('container_number must be in ISO 6346 format');
-      }
-      
-      if (!data.blNumber) {
-        errors.push('bl_number (Bill of Lading) is required for sea shipments');
-      }
-      
-      if (!data.vesselName) {
-        errors.push('vessel_name is required for sea shipments');
-      }
-      
-      if (!data.voyageNumber) {
-        errors.push('voyage_number is required for sea shipments');
-      }
-      
-      return {
-        valid: errors.length === 0,
-        errors
-      };
-    }
-
     test('should validate complete sea shipment data', () => {
       const validSeaShipment = {
         trackingNumber: 'SEA2024001',
@@ -146,7 +130,7 @@ describe('Shipment Validation', () => {
 
       const result = validateSeaShipment(invalidShipment);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('container_number must be in ISO 6346 format');
+      expect(result.errors).toContain('container_number must be in ISO 6346 format (e.g., MSCU1234567)');
     });
 
     test('should return multiple errors for incomplete data', () => {
@@ -163,24 +147,22 @@ describe('Shipment Validation', () => {
 
   describe('Shipment Type Detection', () => {
     test('should identify sea shipment types', () => {
-      const seaTypes = ['sea', 'ocean'];
-      seaTypes.forEach(type => {
-        expect(['sea', 'ocean'].includes(type)).toBe(true);
-      });
+      expect(isSeaShipment('sea')).toBe(true);
+      expect(isSeaShipment('ocean')).toBe(true);
+      expect(isSeaShipment('air')).toBe(false);
     });
 
     test('should identify air shipment types', () => {
-      const airTypes = ['air', 'awb'];
-      airTypes.forEach(type => {
-        expect(['air', 'awb'].includes(type)).toBe(true);
-      });
+      expect(isAirShipment('air')).toBe(true);
+      expect(isAirShipment('awb')).toBe(true);
+      expect(isAirShipment('sea')).toBe(false);
     });
 
     test('should identify express shipment types', () => {
-      const expressTypes = ['express', 'courier'];
-      expressTypes.forEach(type => {
-        expect(['express', 'courier', 'ground'].includes(type) || type === 'express').toBe(true);
-      });
+      expect(isExpressShipment('express')).toBe(true);
+      expect(isExpressShipment('courier')).toBe(true);
+      expect(isExpressShipment('ground')).toBe(true);
+      expect(isExpressShipment('sea')).toBe(false);
     });
   });
 
@@ -194,9 +176,8 @@ describe('Shipment Validation', () => {
       ];
 
       validBLNumbers.forEach(blNumber => {
-        // B/L format: typically carrier code (4 letters) + digits
-        const regex = /^[A-Z]{4}\d{8,12}$/;
-        expect(regex.test(blNumber)).toBe(true);
+        expect(validateBLNumber(blNumber)).toBe(true);
+        expect(BL_NUMBER_REGEX.test(blNumber)).toBe(true);
       });
     });
 
@@ -231,7 +212,7 @@ describe('Shipment Validation', () => {
 
       expect(csvRow.tracking_number).toBeDefined();
       expect(csvRow.shipment_type).toBe('sea');
-      expect(csvRow.container_number).toMatch(/^[A-Z]{4}[0-9]{7}$/);
+      expect(validateContainerNumber(csvRow.container_number)).toBe(true);
       expect(csvRow.bl_number).toBeDefined();
       expect(csvRow.vessel_name).toBeDefined();
       expect(csvRow.voyage_number).toBeDefined();
