@@ -18,19 +18,20 @@ import {
 import { ShipmentType, CreateShipmentInput } from '@/types/shipment';
 
 describe('Container Number Validation', () => {
-  it('should validate correct container numbers', () => {
-    expect(validateContainerNumber('MSCU1234567')).toBe(true);
-    expect(validateContainerNumber('TEMU9876543')).toBe(true);
+  it('should validate correct container number format', () => {
+    // Basic format validation (4 letters + 7 digits)
+    expect(validateContainerNumber('MSCU1234566')).toBe(true);  // Valid check digit
+    expect(validateContainerNumber('TEMU9876540')).toBe(true);  // Valid check digit
   });
   
-  it('should reject invalid container numbers', () => {
-    expect(validateContainerNumber('INVALID')).toBe(false);
-    expect(validateContainerNumber('ABC1234567')).toBe(false); // Wrong check digit
+  it('should reject invalid container number formats', () => {
+    expect(validateContainerNumber('INVALID')).toBe(false);  // Too short
     expect(validateContainerNumber('12345678901')).toBe(false); // All digits
+    expect(validateContainerNumber('ABC123')).toBe(false);  // Too short
   });
   
   it('should handle container numbers with spaces', () => {
-    expect(validateContainerNumber('MSCU 123 456 7')).toBe(true);
+    expect(validateContainerNumber('MSCU 123 456 6')).toBe(true);
   });
 });
 
@@ -108,7 +109,7 @@ describe('Full Shipment Validation', () => {
       trackingNumber: 'MAEU123456789',
       shipmentType: ShipmentType.SEA,
       billOfLading: 'MAEU123456789',
-      containerNumber: 'MSCU1234567',
+      containerNumber: 'MSCU1234566',  // Valid container number
       vesselName: 'MSC ISTANBUL',
       voyageNumber: '026W',
       originCountry: 'CN',
