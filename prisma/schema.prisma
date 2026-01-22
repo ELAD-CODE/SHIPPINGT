@@ -180,3 +180,57 @@ model Analytics {
   
   @@unique([date])
 }
+
+// טבלת משלוחים - מעקב אחר משלוחים עם פרטים מלאים
+model Shipment {
+  id                  String   @id @default(cuid())
+  
+  // זיהוי בסיסי
+  trackingNumber      String   @unique
+  shipmentType        String   @default("air") // air, sea
+  carrier             String?
+  
+  // פרטי מקור ויעד
+  origin              String?
+  destination         String?
+  
+  // פרטי לקוח
+  customerName        String?
+  customerEmail       String?
+  customerPhone       String?
+  
+  // פרטי מטען
+  description         String?
+  referenceNumber     String?
+  notes               String?
+  
+  // שדות ספציפיים למשלוחים אוויריים
+  awbNumber           String?
+  airline             String?
+  flightNumber        String?
+  
+  // שדות ספציפיים למשלוחים ימיים (SEA)
+  containerNumber     String?  // ISO 6346 format: ABCD1234567
+  containerCount      Int?     // מספר מכולות
+  blNumber            String?  // Bill of Lading number
+  vesselName          String?  // שם האונייה
+  voyageNumber        String?  // מספר הפלגה
+  blDocumentUrl       String?  // קישור למסמך B/L
+  
+  // סטטוס ועדכונים
+  status              String?  // in_transit, at_port, customs_clearance, delivered, etc.
+  lastUpdate          DateTime?
+  estimatedArrival    DateTime?
+  actualArrival       DateTime?
+  
+  // Timestamps
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([trackingNumber])
+  @@index([shipmentType])
+  @@index([status])
+  @@index([customerEmail])
+  @@index([containerNumber])
+  @@index([blNumber])
+}
