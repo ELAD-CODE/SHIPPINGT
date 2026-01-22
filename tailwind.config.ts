@@ -48,6 +48,17 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      animation: {
+        // Optional: Add custom animations if needed
+        "fade-in": "fadeIn 0.5s ease-in",
+      },
+      keyframes: {
+        // Optional: Add custom keyframes
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+      },
     },
   },
   plugins: [],

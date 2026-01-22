@@ -1,0 +1,182 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // או "sqlite" למקומי
+  url      = env("DATABASE_URL")
+}
+
+// טבלת חיפושים - כל חיפוש שמישהו עשה
+model TrackingSearch {
+  id              String   @id @default(cuid())
+  trackingNumber  String
+  shipmentType    String?  // air_waybill, bill_of_lading, container, tracking_number
+  carrier         String?
+  found           Boolean  @default(false)
+  
+  // נתוני המשלוח (JSON)
+  trackingData    Json?
+  
+  // CTA triggers
+  showCta         Boolean  @default(false)
+  ctaTriggers     Json?
+  
+  // מידע על החיפוש
+  ipAddress       String?
+  userAgent       String?
+  searchedAt      DateTime @default(now())
+  
+  // קשר ללידים
+  leads           Lead[]
+  
+  @@index([trackingNumber])
+  @@index([searchedAt])
+}
+
+// טבלת לידים - אנשים שביקשו עזרה
+model Lead {
+  id              String   @id @default(cuid())
+  
+  // פרטי הלקוח
+  fullName        String
+  phone           String
+  email           String?
+  
+  // פרטי המשלוח
+  trackingNumber  String
+  shipmentType    String?
+  issue           String?  // customs, documents, cost_inquiry, general
+  
+  // סטטוס הטיפול
+  status          String   @default("new") // new, contacted, in_progress, completed, closed
+  priority        String   @default("medium") // low, medium, high, critical
+  
+  // הערות והיסטוריה
+  notes           String?
+  assignedTo      String?  // שם הסוכן שמטפל
+  
+  // קשר לחיפוש המקורי
+  searchId        String?
+  search          TrackingSearch? @relation(fields: [searchId], references: [id])
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  contactedAt     DateTime?
+  completedAt     DateTime?
+  
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([phone])
+}
+
+// טבלת משתמשים רשומים (אופציונלי - למי שרוצה חשבון)
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  phone           String?
+  name            String?
+  
+  // Authentication (אם תרצה login)
+  passwordHash    String?
+  
+  // Preferences
+  notifyByEmail   Boolean  @default(true)
+  notifyBySms     Boolean  @default(false)
+  language        String   @default("he") // he, en
+  
+  // Saved trackings
+  savedTrackings  SavedTracking[]
+  
+  createdAt       DateTime @default(now())
+  lastLogin       DateTime?
+  
+  @@index([email])
+}
+
+// משלוחים שמורים למשתמשים רשומים
+model SavedTracking {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  trackingNumber  String
+  nickname        String?  // שם שהמשתמש נתן למשלוח
+  shipmentType    String?
+  carrier         String?
+  
+  // Notifications
+  notifyOnArrival Boolean  @default(true)
+  notifyOnCustoms Boolean  @default(true)
+  notifyOnDelivery Boolean @default(true)
+  
+  // Cache של נתונים אחרונים
+  lastStatus      String?
+  lastUpdate      DateTime?
+  
+  createdAt       DateTime @default(now())
+  
+  @@unique([userId, trackingNumber])
+  @@index([userId])
+}
+
+// טבלת הודעות (SMS/Email/WhatsApp) שנשלחו
+model Notification {
+  id              String   @id @default(cuid())
+  
+  // למי
+  recipient       String   // phone או email
+  recipientType   String   // phone, email, whatsapp
+  
+  // מה
+  subject         String?
+  message         String
+  
+  // בקשר למה
+  trackingNumber  String?
+  leadId          String?
+  
+  // סטטוס
+  status          String   @default("pending") // pending, sent, failed
+  provider        String?  // twilio, sendgrid, etc
+  providerId      String?  // ID מהספק
+  
+  sentAt          DateTime?
+  failedAt        DateTime?
+  errorMessage    String?
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([status])
+  @@index([trackingNumber])
+}
+
+// טבלת Analytics - למעקב אחרי ביצועים
+model Analytics {
+  id              String   @id @default(cuid())
+  date            DateTime @default(now())
+  
+  // מטריקות יומיות
+  totalSearches   Int      @default(0)
+  uniqueVisitors  Int      @default(0)
+  totalLeads      Int      @default(0)
+  conversionRate  Float?   // leads / searches
+  
+  // פירוט לפי סוג משלוח
+  awbSearches     Int      @default(0)
+  blSearches      Int      @default(0)
+  containerSearches Int    @default(0)
+  trackingSearches Int     @default(0)
+  
+  // CTAs
+  ctaShown        Int      @default(0)
+  ctaClicked      Int      @default(0)
+  
+  @@unique([date])
+}
