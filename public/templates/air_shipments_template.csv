@@ -1,0 +1,4 @@
+tracking_number,shipment_type,carrier,origin,destination,customer_name,customer_email,customer_phone,awb_number,airline,flight_number,description,reference_number,notes
+157-12345678,air,Emirates,Dubai,Tel Aviv,John Doe,john@example.com,+972-52-123-4567,157-12345678,Emirates,EK932,Documents,REF001,Urgent
+074-98765432,air,KLM,Amsterdam,Tel Aviv,Jane Smith,jane@example.com,+972-54-987-6543,074-98765432,KLM,KL1574,Electronics,REF002,Handle with care
+020-11111111,air,Lufthansa,Frankfurt,Tel Aviv,Tech Corp,tech@example.com,+972-53-111-2222,020-11111111,Lufthansa,LH686,Computer Parts,REF003,Fragile

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const response: ShipmentsListResponse = {
       success: true,
       data: {
-        shipments,
+        shipments: shipments as any, // Cast due to Prisma type vs our union type
         total,
         page,
         perPage,
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Shipment created successfully',
       message_he: 'המשלוח נוסף בהצלחה',
-      data: shipment,
+      data: shipment as any, // Cast due to Prisma type vs our union type
     };
 
     return NextResponse.json(response, { status: 201 });
