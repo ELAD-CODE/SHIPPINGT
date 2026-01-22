@@ -104,15 +104,19 @@ export interface Shipment {
   trackingNumber: string;
   shipmentType: ShipmentType;
   
-  // Customer
+  // Customer (use either structured object OR individual fields, not both)
+  // Structured approach (recommended for new code):
   customer?: CustomerInfo;
+  // Flat fields (for backward compatibility and simple queries):
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
   
-  // Locations
+  // Locations (use either structured objects OR individual fields, not both)
+  // Structured approach (recommended for new code):
   origin?: LocationInfo;
   destination?: LocationInfo;
+  // Flat fields (for backward compatibility and database queries):
   originCountry?: string;
   originPort?: string;
   originAddress?: string;

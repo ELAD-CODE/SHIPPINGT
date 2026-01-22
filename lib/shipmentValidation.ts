@@ -276,7 +276,8 @@ export function sanitizeShipmentInput(input: CreateShipmentInput): CreateShipmen
     customerEmail: input.customerEmail?.trim().toLowerCase(),
     billOfLading: input.billOfLading?.trim().toUpperCase(),
     containerNumber: input.containerNumber?.trim().toUpperCase().replace(/\s/g, ''),
-    airWaybillNumber: input.airWaybillNumber?.trim().replace(/\s/g, ''),
+    // Preserve hyphen in AWB format (XXX-XXXXXXXX)
+    airWaybillNumber: input.airWaybillNumber?.trim().replace(/\s+/g, ''),
     currency: input.currency?.trim().toUpperCase() || 'USD',
   };
   
