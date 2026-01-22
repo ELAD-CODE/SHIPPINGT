@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, ShipmentType } from '@prisma/client';
+import { ShipmentType } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import {
   validateSeaShipment,
   validateAirShipment,
@@ -7,8 +8,6 @@ import {
   VALID_SHIPMENT_TYPES,
   type ValidShipmentType
 } from '@/lib/shipmentValidation';
-
-const prisma = new PrismaClient();
 
 /**
  * GET /api/shipments - List all shipments

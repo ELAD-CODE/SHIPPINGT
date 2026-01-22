@@ -282,6 +282,3 @@ describe('Shipment Creation Examples', () => {
     expect(AWB_NUMBER_REGEX.test(airShipment.awbNumber)).toBe(true);
   });
 });
-
-// Export for use in other test files if needed
-export { };
