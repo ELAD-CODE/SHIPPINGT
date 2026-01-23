@@ -1,56 +1,53 @@
-import { describe, it, expect } from '@jest/globals'; // Add this
+import { describe, it, expect } from '@jest/globals';
 import { detectShipmentType, ShipmentTypes, isValidShipmentNumber, getFormatExplanation } from './detectShipmentType';
 
 describe('detectShipmentType', () => {
-  it('should return the correct shipment type for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const expectedType = ShipmentTypes.TYPE_A;
-    const result = detectShipmentType(shipmentNumber);
-    expect(result).toBe(expectedType);
+  it('should detect AWB format', () => {
+    const result = detectShipmentType('157-12345678');
+    expect(result.type).toBe(ShipmentTypes.AIR_WAYBILL);
+    expect(result.valid).toBe(true);
+    expect(result.carrier).toBe('Emirates');
   });
 
-  it('should return null for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = detectShipmentType(shipmentNumber);
-    expect(result).toBeNull();
+  it('should detect Container format', () => {
+    const result = detectShipmentType('MSCU1234567');
+    expect(result.type).toBe(ShipmentTypes.CONTAINER);
+  });
+
+  it('should detect Bill of Lading format', () => {
+    const result = detectShipmentType('MAEU123456789');
+    expect(result.type).toBe(ShipmentTypes.BILL_OF_LADING);
+    expect(result.valid).toBe(true);
+  });
+
+  it('should return UNKNOWN for invalid shipment number', () => {
+    const result = detectShipmentType('invalid_shipment_number');
+    expect(result.type).toBe(ShipmentTypes.UNKNOWN);
+    expect(result.valid).toBe(false);
   });
 });
 
 describe('isValidShipmentNumber', () => {
-  it('should return true for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const result = isValidShipmentNumber(shipmentNumber);
+  it('should return true for a valid AWB', () => {
+    const result = isValidShipmentNumber('157-12345678');
     expect(result).toBe(true);
   });
 
   it('should return false for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = isValidShipmentNumber(shipmentNumber);
+    const result = isValidShipmentNumber('invalid_shipment_number');
     expect(result).toBe(false);
   });
 });
 
 describe('getFormatExplanation', () => {
-  it('should return the correct format explanation for a valid shipment number', () => {
-    const shipmentNumber = '123456789';
-    const expectedExplanation = 'Format: 9 digits';
-    const result = getFormatExplanation(shipmentNumber);
-    expect(result).toBe(expectedExplanation);
+  it('should return explanation for AWB', () => {
+    const result = getFormatExplanation(ShipmentTypes.AIR_WAYBILL);
+    expect(result).not.toBeNull();
+    expect(result?.title).toBe('שטר מטען אווירי (AWB)');
   });
 
-  it('should return null for an invalid shipment number', () => {
-    const shipmentNumber = 'invalid_shipment_number';
-    const result = getFormatExplanation(shipmentNumber);
+  it('should return null for unknown type', () => {
+    const result = getFormatExplanation('invalid_type');
     expect(result).toBeNull();
   });
 });
-
-// Current order - GOOD (container checked before B/L)
-// Keep as-is, more specific patterns first ✅
-
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts']
-};

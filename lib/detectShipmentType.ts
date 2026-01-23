@@ -265,9 +265,3 @@ export function getFormatExplanation(type: string): {
   return explanations[type] || null;
 }
 
-describe('detectShipmentType', () => {
-  it('should detect AWB format', () => {
-    const result = detectShipmentType('157-12345678');
-    expect(result.type).toBe(ShipmentTypes.AIR_WAYBILL);
-  });
-});
