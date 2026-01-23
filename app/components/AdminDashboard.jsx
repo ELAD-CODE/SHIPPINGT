@@ -95,7 +95,7 @@ const AdminDashboard = ({ allShipments = [] }) => {
             <ArrowUp size={20} style={{ color: '#22c55e' }} />
           </div>
           <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem', fontWeight: '500' }}>
-            סה"כ משלוחים
+            סה&quot;כ משלוחים
           </div>
           <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#38bdf8', marginBottom: '0.5rem' }}>
             {stats.totalShipments}
@@ -133,7 +133,7 @@ const AdminDashboard = ({ allShipments = [] }) => {
             {stats.activeShipments}
           </div>
           <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
-            {Math.round((stats.activeShipments / stats.totalShipments) * 100)}% מסה"כ
+            {Math.round((stats.activeShipments / stats.totalShipments) * 100)}% מסה&quot;כ
           </div>
         </div>
 

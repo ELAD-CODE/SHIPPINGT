@@ -1,4 +1,4 @@
-rm pages/tracking.jsximport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, MapPin, Clock, Truck, Ship, Plane, CheckCircle, Search, Calendar, 
   Navigation, AlertCircle, Loader, Bell, Download, Mail, MessageSquare,
@@ -584,7 +584,7 @@ export default function AdvancedShipmentTracker() {
                     <span style={{ fontWeight: '600' }}>${customsResult.customsDuty.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
-                    <span>מע"מ ({customsResult.breakdown.vat}%):</span>
+                    <span>מע&quot;מ ({customsResult.breakdown.vat}%):</span>
                     <span style={{ fontWeight: '600' }}>${customsResult.vat.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
@@ -601,7 +601,7 @@ export default function AdvancedShipmentTracker() {
                     fontWeight: '700',
                     color: '#a78bfa'
                   }}>
-                    <span>סה"כ לתשלום:</span>
+                    <span>סה&quot;כ לתשלום:</span>
                     <span>${customsResult.totalCost.toFixed(2)}</span>
                   </div>
                 </div>

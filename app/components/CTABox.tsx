@@ -176,7 +176,7 @@ export default function CTABox({ triggers, onContactClick }: CTABoxProps) {
             💼 <strong>אלעד גרינברג</strong> - סוכן מכס מוסמך
           </p>
           <p className="text-white/70 text-xs mt-1">
-            מומחה בשחרור משלוחים בנתב"ג ונמלי ישראל
+            מומחה בשחרור משלוחים בנתב&quot;ג ונמלי ישראל
           </p>
         </div>
       </div>
