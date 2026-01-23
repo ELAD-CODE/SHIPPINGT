@@ -21,7 +21,7 @@ export function mapTrackingGetResponse(payload: any, trackingNumber: string, fal
   const carrierName = firstAvailable(originInfo?.carrier_name, originInfo?.courier_name, carrierCode) || carrierCode;
 
   const statusCode = firstAvailable(originInfo?.status, data?.status, originInfo?.state, data?.state, '');
-  const statusTextRaw = firstAvailable(originInfo?.status_description, originInfo?.status_description, originInfo?.StatusDescription, originInfo?.Status, data?.status_text, data?.status) || '';
+  const statusTextRaw = firstAvailable(originInfo?.status_description, originInfo?.StatusDescription, originInfo?.Status, data?.status_text, data?.status) || '';
 
   const rawEvents = originInfo?.trackinfo ?? originInfo?.trackInfo ?? originInfo?.events ?? data?.events ?? [];
   const events: TrackingEvent[] = Array.isArray(rawEvents)
@@ -38,7 +38,7 @@ export function mapTrackingGetResponse(payload: any, trackingNumber: string, fal
       })
     : [];
 
-  const estimated = firstAvailable(originInfo?.estimated_delivery_time, data?.estimated_delivery_time, data?.eta, null);
+  const estimated = firstAvailable(originInfo?.estimated_delivery_time, data?.estimated_delivery_time, data?.eta, undefined);
 
   return {
     success: true,
@@ -48,6 +48,6 @@ export function mapTrackingGetResponse(payload: any, trackingNumber: string, fal
     origin: { country: originInfo?.original_country ?? originInfo?.origin_country, city: originInfo?.origin_city ?? undefined },
     destination: { country: originInfo?.destination_country ?? originInfo?.dest_country, city: originInfo?.destination_city ?? undefined },
     events,
-    estimated_delivery: estimated ?? null,
+    estimated_delivery: estimated,
   };
 }
