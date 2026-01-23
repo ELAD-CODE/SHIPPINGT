@@ -1,47 +1,67 @@
-export async function GET() {
-  return Response.json({
-    success: true,
-    message_he: 'Track API is working! ✅'
-  });
-}
+import { NextResponse } from 'next/server';
+import { mapTrackingGetResponse } from '../../../lib/tracking/converters';
 
-export async function POST(req: Request) {
+const TRACKINGMORE_CREATE = 'https://api.trackingmore.com/v4/trackings/create';
+const TRACKINGMORE_GET_BASE = 'https://api.trackingmore.com/v4/trackings/get';
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const trackingNumber = url.searchParams.get('trackingNumber');
+  const carrier = url.searchParams.get('carrier');
+  const lang = url.searchParams.get('lang') ?? 'en';
+
+  if (!trackingNumber) {
+    return NextResponse.json({ success: false, error: 'trackingNumber נדרש' }, { status: 400 });
+  }
+
+  const key = process.env.TRACKINGMORE_API_KEY;
+  if (!key) {
+    return NextResponse.json({ success: false, error: 'TRACKINGMORE_API_KEY לא מוגדר' }, { status: 500 });
+  }
+
   try {
-    const { tracking_number } = await req.json();
+    // Try to create tracking (optional step)
+    try {
+      const createBody: any = { tracking_number: trackingNumber };
+      if (carrier) createBody.courier_code = carrier;
 
-    if (!tracking_number) {
-      return Response.json(
-        { success: false, message_he: '❌ חסר מספר מעקב' },
-        { status: 400 }
-      );
+      await fetch(TRACKINGMORE_CREATE, {
+        method: 'POST',
+        headers: {
+          'Tracking-Api-Key': key,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(createBody),
+      });
+    } catch (createErr) {
+      console.warn('TrackingMore create failed (ignored):', createErr);
     }
 
-    // Return mock response with test data
-    return Response.json(getMockResponse(tracking_number), { status: 200 });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return Response.json(
-      { success: false, message_he: '❌ שגיאה בעיבוד', error: error.message },
-      { status: 500 }
-    );
-  }
-}
+    // Get tracking information
+    const getUrl = `${TRACKINGMORE_GET_BASE}?lang=${encodeURIComponent(lang)}&express=${encodeURIComponent(carrier ?? '')}&tracknumber=${encodeURIComponent(trackingNumber)}`;
+    const getRes = await fetch(getUrl, {
+      method: 'GET',
+      headers: {
+        'Tracking-Api-Key': key,
+        'Content-Type': 'application/json',
+      },
+    });
 
-function getMockResponse(trackingNumber: string) {
-  return {
-    success: true,
-    message_he: '✅ משלוח נמצא (נתונים לדוגמה)',
-    tracking_number: trackingNumber,
-    courier: 'DHL',
-    courier_name: 'DHL Express',
-    status: 'in_transit',
-    status_he: 'בדרך',
-    origin: 'Shanghai, China',
-    destination: 'Tel Aviv, Israel',
-    origin_country: 'CN',
-    destination_country: 'IL',
-    last_update: new Date().toISOString(),
-    last_update_he: 'עכשיו',
-    note: '📌 זהו משלוח לדוגמה. להשתמוש בתוך ממשק בדיקה בלבד.'
-  };
+    if (!getRes.ok) {
+      const txt = await getRes.text();
+      return NextResponse.json({ success: false, error: 'שגיאה ב-TrackingMore (GET)', details: txt }, { status: getRes.status });
+    }
+
+    const payload = await getRes.json();
+
+    // Convert response using our converter
+    const mapped = mapTrackingGetResponse(payload, trackingNumber, carrier ?? undefined);
+    if (!mapped.success) {
+      return NextResponse.json(mapped, { status: 502 });
+    }
+
+    return NextResponse.json(mapped);
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: 'שגיאת שרת', details: err.message || String(err) }, { status: 500 });
+  }
 }
