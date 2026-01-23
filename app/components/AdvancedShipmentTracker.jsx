@@ -835,7 +835,7 @@ const AdvancedShipmentTracker = () => {
                     <span style={{ fontWeight: '600' }}>${customsResult.customsDuty.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
-                    <span>מע"מ ({customsResult.breakdown.vat}%):</span>
+                    <span>מע&quot;מ ({customsResult.breakdown.vat}%):</span>
                     <span style={{ fontWeight: '600' }}>${customsResult.vat.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#cbd5e1' }}>
@@ -852,7 +852,7 @@ const AdvancedShipmentTracker = () => {
                     fontWeight: '700',
                     color: '#a78bfa'
                   }}>
-                    <span>סה"כ לתשלום:</span>
+                    <span>סה&quot;כ לתשלום:</span>
                     <span>${customsResult.totalCost.toFixed(2)}</span>
                   </div>
                 </div>
