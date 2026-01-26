@@ -1,47 +1,42 @@
-export async function GET() {
-  return Response.json({
-    success: true,
-    message_he: 'Track API is working! ✅'
-  });
-}
+/**
+ * GET /api/track?trackingNumber=...&carrier=...
+ * Main endpoint for tracking shipments
+ */
 
-export async function POST(req: Request) {
+import { NextRequest, NextResponse } from 'next/server';
+import { getTrackingDetails } from '@/lib/trackingmore';
+
+export async function GET(request: NextRequest) {
   try {
-    const { tracking_number } = await req.json();
+    const searchParams = request.nextUrl.searchParams;
+    const trackingNumber = searchParams.get('trackingNumber');
+    const carrier = searchParams.get('carrier');
 
-    if (!tracking_number) {
-      return Response.json(
-        { success: false, message_he: '❌ חסר מספר מעקב' },
+    // Validate input
+    if (!trackingNumber || !trackingNumber.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'מספר מעקב לא תקין',
+        },
         { status: 400 }
       );
     }
 
-    // Return mock response with test data
-    return Response.json(getMockResponse(tracking_number), { status: 200 });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return Response.json(
-      { success: false, message_he: '❌ שגיאה בעיבוד', error: error.message },
+    // Get tracking details
+    const result = await getTrackingDetails(trackingNumber.trim(), carrier || undefined);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('Track API error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'שגיאה בשרת',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
-}
-
-function getMockResponse(trackingNumber: string) {
-  return {
-    success: true,
-    message_he: '✅ משלוח נמצא (נתונים לדוגמה)',
-    tracking_number: trackingNumber,
-    courier: 'DHL',
-    courier_name: 'DHL Express',
-    status: 'in_transit',
-    status_he: 'בדרך',
-    origin: 'Shanghai, China',
-    destination: 'Tel Aviv, Israel',
-    origin_country: 'CN',
-    destination_country: 'IL',
-    last_update: new Date().toISOString(),
-    last_update_he: 'עכשיו',
-    note: '📌 זהו משלוח לדוגמה. להשתמוש בתוך ממשק בדיקה בלבד.'
-  };
 }
