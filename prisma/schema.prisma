@@ -180,3 +180,123 @@ model Analytics {
   
   @@unique([date])
 }
+
+// ============================================================================
+// טבלת משלוחים - תמיכה מלאה במשלוחים אוויריים וימיים
+// ============================================================================
+model Shipment {
+  id                  String        @id @default(cuid())
+  
+  // פרטי זיהוי בסיסיים
+  trackingNumber      String        @unique
+  referenceNumber     String?       // מספר הזמנה פנימי
+  
+  // סוג המשלוח (ENUM)
+  shipmentType        ShipmentType  // air, sea, road
+  
+  // פרטי מוביל כלליים
+  carrier             String?       // שם חברת השילוח
+  carrierCode         String?       // קוד חברת השילוח
+  
+  // מיקומים
+  originCountry       String?
+  originCity          String?
+  originPort          String?       // נמל/שדה תעופה מקור
+  destinationCountry  String?
+  destinationCity     String?
+  destinationPort     String?       // נמל/שדה תעופה יעד
+  
+  // סטטוס ותאריכים
+  status              String        @default("pending") // pending, in_transit, at_port, customs, delivered
+  statusHe            String?       // תרגום עברי של הסטטוס
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  estimatedDelivery   DateTime?
+  actualDelivery      DateTime?
+  
+  // ========== שדות למשלוחים ימיים (SEA) ==========
+  
+  // פרטי קונטיינר
+  containerNumber     String?       // מספר קונטיינר (ISO 6346 format)
+  containerType       String?       // 20ft, 40ft, 40HC, etc.
+  containerCount      Int?          // מספר קונטיינרים במשלוח
+  
+  // פרטי כלי שיט
+  vesselName          String?       // שם הספינה
+  vesselIMO           String?       // IMO number של הספינה
+  voyageNumber        String?       // מספר הפלגה
+  
+  // Bill of Lading (B/L)
+  blNumber            String?       // מספר שטר מטען
+  blType              String?       // Original, Telex Release, SeaWaybill
+  blDocumentUrl       String?       // קישור למסמך B/L
+  
+  // פרטי נמל
+  portOfLoading       String?       // נמל העמסה
+  portOfDischarge     String?       // נמל פריקה
+  
+  // תאריכים ימיים
+  etd                 DateTime?     // Estimated Time of Departure
+  atd                 DateTime?     // Actual Time of Departure
+  eta                 DateTime?     // Estimated Time of Arrival
+  ata                 DateTime?     // Actual Time of Arrival
+  
+  // ========== שדות למשלוחים אוויריים (AIR) ==========
+  
+  // Air Waybill (AWB)
+  awbNumber           String?       // מספר שטר מטען אווירי
+  awbPrefix           String?       // 3 ספרות ראשונות (קוד חברת תעופה)
+  
+  // פרטי טיסה
+  flightNumber        String?       // מספר טיסה
+  flightDate          DateTime?     // תאריך טיסה
+  airline             String?       // חברת תעופה
+  airlineCode         String?       // קוד IATA של חברת תעופה
+  
+  // ========== שדות כלליים נוספים ==========
+  
+  // משקל ומידות
+  weight              Float?        // משקל בק"ג
+  volume              Float?        // נפח במ"ק
+  pieces              Int?          // מספר חבילות/יחידות
+  
+  // ערך ומסמכים
+  declaredValue       Float?        // ערך מוצהר
+  currency            String?       // מטבע
+  invoiceUrl          String?       // קישור לחשבונית
+  packingListUrl      String?       // קישור לרשימת אריזה
+  
+  // פרטי מכס
+  customsStatus       String?       // pending, cleared, inspection
+  customsDate         DateTime?     // תאריך שחרור מכס
+  customsReference    String?       // מספר התיק במכס
+  
+  // הערות ומידע נוסף
+  notes               String?       // הערות כלליות
+  specialInstructions String?       // הוראות מיוחדות
+  incoterm            String?       // תנאי מסירה (FOB, CIF, etc.)
+  
+  // מידע טכני
+  trackingData        Json?         // נתונים גולמיים מ-API
+  lastTracked         DateTime?     // עדכון אחרון מ-API
+  
+  // קשרים
+  userId              String?       // משתמש שיצר/בעלים
+  
+  @@index([trackingNumber])
+  @@index([shipmentType])
+  @@index([status])
+  @@index([containerNumber])
+  @@index([blNumber])
+  @@index([awbNumber])
+  @@index([estimatedDelivery])
+  @@index([createdAt])
+}
+
+// ENUM לסוגי משלוחים
+enum ShipmentType {
+  air   // משלוח אווירי (AWB)
+  sea   // משלוח ימי (Container/B/L)
+  road  // משלוח יבשתי
+}

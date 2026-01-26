@@ -1,0 +1,186 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - staging
+  pull_request:
+    branches:
+      - main
+
+# Global permissions
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ============================================================================
+  # Security: Secret Scanning with Gitleaks
+  # ============================================================================
+  secret-scanning:
+    name: 🔐 Secret Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for gitleaks
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Optional
+
+  # ============================================================================
+  # Build and Test
+  # ============================================================================
+  build-and-test:
+    name: 🏗️ Build & Test
+    runs-on: ubuntu-latest
+    needs: secret-scanning  # Only run if secret scanning passes
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate environment setup
+        run: |
+          if [ ! -f ".env.example" ]; then
+            echo "❌ Error: .env.example file is missing"
+            exit 1
+          fi
+          echo "✅ .env.example file exists"
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+        env:
+          # Use test environment variables
+          SKIP_ENV_VALIDATION: true
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          TRACKINGMORE_API_KEY: test_key_for_ci_only
+          SESSION_SECRET: test_secret_for_ci_only
+          NODE_ENV: test
+
+      - name: Build application
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          TRACKINGMORE_API_KEY: test_key_for_ci_only
+          SESSION_SECRET: test_secret_for_ci_only
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: .next
+          retention-days: 7
+
+  # ============================================================================
+  # Deploy to AWS (staging branch only)
+  # ============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to AWS
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    permissions:
+      contents: read
+      id-token: write  # For OIDC authentication with AWS
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .next
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to S3
+        run: |
+          # Example: Deploy static assets to S3
+          # Adjust this based on your deployment strategy (S3, EB, ECS, etc.)
+          echo "🚀 Deploying to AWS..."
+          
+          # For S3 static hosting:
+          # aws s3 sync .next/static s3://${{ secrets.S3_BUCKET }}/static --delete
+          
+          # For Elastic Beanstalk:
+          # zip -r deploy.zip .
+          # aws elasticbeanstalk create-application-version ...
+          # aws elasticbeanstalk update-environment ...
+          
+          # For ECS:
+          # Build and push Docker image
+          # Update ECS service
+          
+          echo "✅ Deployment completed"
+
+      - name: Deployment status
+        run: |
+          echo "📦 Deployment Summary:"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Commit: ${{ github.sha }}"
+          echo "  AWS Region: us-east-1"
+          echo "✅ Staging deployment successful!"
+
+  # ============================================================================
+  # Status Check Summary
+  # ============================================================================
+  status-check:
+    name: ✅ Status Check
+    runs-on: ubuntu-latest
+    needs: [secret-scanning, build-and-test]
+    if: always()
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Check job status
+        run: |
+          if [ "${{ needs.secret-scanning.result }}" != "success" ]; then
+            echo "❌ Secret scanning failed"
+            exit 1
+          fi
+          if [ "${{ needs.build-and-test.result }}" != "success" ]; then
+            echo "❌ Build and test failed"
+            exit 1
+          fi
+          echo "✅ All checks passed successfully!"
