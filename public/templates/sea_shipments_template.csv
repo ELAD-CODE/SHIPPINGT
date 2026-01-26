@@ -1,0 +1,4 @@
+tracking_number,shipment_type,carrier,origin,destination,customer_name,customer_email,customer_phone,container_number,container_count,bl_number,vessel_name,voyage_number,bl_document_url,description,reference_number,notes
+MAEU123456789,sea,Maersk Line,Shanghai,Ashdod,ABC Trading Ltd,contact@example.com,+972-52-842-0009,MSCU1234567,2,MAEU123456789,MSC OSCAR,026W,https://example.com/docs/bl_123.pdf,Furniture and Home Goods,PO-2024-001,Temperature controlled containers
+COSU987654321,sea,COSCO,Shenzhen,Haifa,XYZ Imports,info@example.com,+972-53-333-4444,CSNU9876543,1,COSU987654321,COSCO SHIPPING UNIVERSE,045E,,Electronics,PO-2024-002,
+HLCU456789012,sea,Hapag-Lloyd,Hamburg,Ashdod,Global Logistics,logistics@example.com,+972-54-555-6666,HLCU4567890,3,HLCU456789012,BUDAPEST EXPRESS,112N,,Machinery,PO-2024-003,Oversized cargo

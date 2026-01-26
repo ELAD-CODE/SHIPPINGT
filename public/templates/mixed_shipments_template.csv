@@ -1,0 +1,5 @@
+tracking_number,shipment_type,carrier,origin,destination,customer_name,customer_email,customer_phone,container_number,container_count,bl_number,vessel_name,voyage_number,awb_number,airline,description,reference_number,notes
+MAEU123456789,sea,Maersk,Shanghai,Ashdod,ABC Ltd,abc@example.com,+972-52-111-2222,MSCU1234567,1,MAEU123456789,MSC OSCAR,026W,,,Furniture,PO-001,Sea freight
+157-12345678,air,Emirates,Dubai,Tel Aviv,XYZ Corp,xyz@example.com,+972-53-222-3333,,,,,157-12345678,Emirates,Documents,PO-002,Air freight
+1234567890,air,DHL,London,Tel Aviv,Global Inc,info@example.com,+972-54-333-4444,,,,,1234567890,DHL Express,Samples,PO-003,Express delivery
+COSU987654321,sea,COSCO,Ningbo,Haifa,Import Co,import@example.com,+972-52-444-5555,CSNU9876543,2,COSU987654321,COSCO GLORY,088W,,,Electronics,PO-004,Temperature sensitive
